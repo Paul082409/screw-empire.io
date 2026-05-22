@@ -14,6 +14,9 @@ const PRODUCERS = [
   { id: 4,  name: "Complexe Robotisé",     base: 375,   cost: 12500, phase: 3, icon: "🤖"  },
   { id: 5,  name: "Nano-Usine",            base: 1875,  cost: 62500, phase: 4, icon: "💠"  },
   { id: 6,  name: "Forge Quantique",       base: 9375,  cost: 312500,phase: 5, icon: "⚡"  },
+  { id: 7,  name: "Station Orbitale",      base: 46875, cost: 1562500, phase: 6, icon: "🚀" },
+  { id: 8,  name: "Réacteur Stellaire",    base: 500000, cost: 50e6,    phase: 7, icon: "⭐" },
+  { id: 9,  name: "Singularité Cosmique",  base: 5e6,    cost: 500e6,  phase: 8, icon: "🌀" },
 ];
 
 // ---- DONNÉES DES AMÉLIORATIONS ----
@@ -33,17 +36,26 @@ const UPGRADES = [
   { id: 12, name: "Forge Singularité",      effect: "click",    mult: 25,  cost: 1e8,     phase: 5, icon: "🌀" },
   { id: 13, name: "Nano-Assemblage",        effect: "prod",     mult: 10,  cost: 2.5e8,   phase: 5, icon: "🧬" },
   { id: 14, name: "Monopole Mondial",       effect: "value",    mult: 25,  cost: 5e8,     phase: 5, icon: "🌍" },
+  { id: 15, name: "Clic Dimensionnel",     effect: "click",    mult: 50,  cost: 1e9,     phase: 6, icon: "🌀" },
+  { id: 16, name: "IA Universelle",        effect: "prod",     mult: 20,  cost: 2.5e9,   phase: 6, icon: "🧿" },
+  { id: 17, name: "Monopole Galactique",   effect: "value",    mult: 50,  cost: 5e9,     phase: 6, icon: "🌌" },
+  { id: 18, name: "Forge Stellaire",       effect: "click",    mult: 100, cost: 1e10,    phase: 7, icon: "💫" },
+  { id: 19, name: "Fusion Quantique",      effect: "prod",     mult: 50,  cost: 2.5e10,  phase: 7, icon: "⚡" },
+  { id: 20, name: "Marché Interstellaire", effect: "value",    mult: 100, cost: 5e10,    phase: 7, icon: "🌠" },
+  { id: 21, name: "Clic Divin",           effect: "click",    mult: 500, cost: 1e12,    phase: 8, icon: "✨" },
+  { id: 22, name: "Création Cosmique",    effect: "prod",     mult: 200, cost: 2.5e12,  phase: 8, icon: "🌌" },
+  { id: 23, name: "Emprise Totale",       effect: "value",    mult: 500, cost: 5e12,    phase: 8, icon: "👁️" },
 ];
 
 // ---- DONNÉES DES AMÉLIORATIONS BANCAIRES ----
 const BANK_UPGRADES = [
-  { id: 0,  name: "Compte Épargne",         bonus: 0.0005, cost: 500,    icon: "🏦" },
-  { id: 1,  name: "Livret Premium",         bonus: 0.0010, cost: 2000,   icon: "📋" },
-  { id: 2,  name: "Obligations d'État",     bonus: 0.0015, cost: 10000,  icon: "📜" },
-  { id: 3,  name: "Fonds de Placement",     bonus: 0.0025, cost: 50000,  icon: "📈" },
-  { id: 4,  name: "Investissement Pro",     bonus: 0.0040, cost: 250000, icon: "💼" },
-  { id: 5,  name: "Capital-Risque",         bonus: 0.0060, cost: 1e6,    icon: "🚀" },
-  { id: 6,  name: "Holding Internationale", bonus: 0.0100, cost: 5e6,    icon: "🌍" },
+  { id: 0,  name: "Compte Épargne",         bonus: 0.01,  cost: 5000,    icon: "🏦" },
+  { id: 1,  name: "Livret Premium",         bonus: 0.03,  cost: 20000,   icon: "📋" },
+  { id: 2,  name: "Obligations d'État",     bonus: 0.06,  cost: 100000,  icon: "📜" },
+  { id: 3,  name: "Fonds de Placement",     bonus: 0.12,  cost: 500000,  icon: "📈" },
+  { id: 4,  name: "Investissement Pro",     bonus: 0.25,  cost: 2.5e6,   icon: "💼" },
+  { id: 5,  name: "Capital-Risque",         bonus: 0.50,  cost: 10e6,    icon: "🚀" },
+  { id: 6,  name: "Holding Internationale", bonus: 1.00,  cost: 50e6,    icon: "🌍" },
 ];
 
 // ---- PHASES ----
@@ -53,30 +65,33 @@ const PHASES = [
   { level: 3, name: "Optimisation Avancée",  threshold: 50000,      desc: "Profit et efficacité" },
   { level: 4, name: "Économie de Pointe",    threshold: 1e6,        desc: "Systèmes financiers optimisés" },
   { level: 5, name: "Production Absolue",    threshold: 1e8,        desc: "Croissance exponentielle" },
+  { level: 6, name: "Domination Cosmique",  threshold: 1e9,        desc: "Production interstellaire" },
+  { level: 7, name: "Fusion Stellaire",     threshold: 1e10,       desc: "Énergie stellaire et production massive" },
+  { level: 8, name: "Puissance Divine",     threshold: 1e12,       desc: "Production interdimensionnelle" },
 ];
 
 // ---- SUCCÈS ----
 const ACHIEVEMENTS = [
-  { id: 0,  name: "Premier Profit",     check: s => s.totalMoney >= 100,         icon: "🪙" },
-  { id: 1,  name: "Business en Croissance", check: s => s.totalMoney >= 1000,    icon: "💰" },
-  { id: 2,  name: "Industriel",         check: s => s.totalMoney >= 1e5,         icon: "🏭" },
-  { id: 3,  name: "Millionnaire",       check: s => s.totalMoney >= 1e6,         icon: "💵" },
-  { id: 4,  name: "Milliardaire",       check: s => s.totalMoney >= 1e9,         icon: "💎" },
-  { id: 5,  name: "Premier Ouvrier",    check: s => s.producers[0] >= 1,         icon: "👷" },
-  { id: 6,  name: "Équipe Complète",    check: s => s.producers[0] >= 10,        icon: "👥" },
-  { id: 7,  name: "Mécanisé",           check: s => s.producers[1] >= 1,         icon: "⚙️" },
-  { id: 8,  name: "Automatisé",         check: s => s.producers[2] >= 1,         icon: "🏭" },
-  { id: 9,  name: "Propriétaire d'Usine", check: s => s.producers[3] >= 1,       icon: "🔧" },
-  { id: 10, name: "Robotique",          check: s => s.producers[4] >= 1,         icon: "🤖" },
-  { id: 11, name: "Nano-Tech",          check: s => s.producers[5] >= 1,         icon: "💠" },
-  { id: 12, name: "Ère Quantique",      check: s => s.producers[6] >= 1,         icon: "⚡" },
-  { id: 13, name: "Clicker",            check: s => s.totalClicks >= 100,        icon: "🖱️" },
-  { id: 14, name: "Clicker Fou",        check: s => s.totalClicks >= 1000,       icon: "⌨️" },
-  { id: 15, name: "Clicker Légende",    check: s => s.totalClicks >= 10000,      icon: "🏆" },
-  { id: 16, name: "Novice de la Vis",   check: s => s.totalScrews >= 1000,       icon: "🔩" },
-  { id: 17, name: "Expert en Vis",      check: s => s.totalScrews >= 1e5,        icon: "⭐" },
-  { id: 18, name: "Maître de la Vis",   check: s => s.totalScrews >= 1e7,        icon: "🌟" },
-  { id: 19, name: "Dieu de la Vis",     check: s => s.totalScrews >= 1e9,        icon: "👑" },
+  { id: 0,  name: "Premier Profit",     check: s => s.totalMoney >= 100,         icon: "🪙", desc: "Gagnez 100$ au total" },
+  { id: 1,  name: "Business en Croissance", check: s => s.totalMoney >= 1000,    icon: "💰", desc: "Gagnez 1 000$ au total" },
+  { id: 2,  name: "Industriel",         check: s => s.totalMoney >= 1e5,         icon: "🏭", desc: "Gagnez 100 000$ au total" },
+  { id: 3,  name: "Millionnaire",       check: s => s.totalMoney >= 1e6,         icon: "💵", desc: "Gagnez 1M$ au total" },
+  { id: 4,  name: "Milliardaire",       check: s => s.totalMoney >= 1e9,         icon: "💎", desc: "Gagnez 1Md$ au total" },
+  { id: 5,  name: "Premier Ouvrier",    check: s => s.producers[0] >= 1,         icon: "👷", desc: "Achetez 1 Ouvrier Manuel" },
+  { id: 6,  name: "Équipe Complète",    check: s => s.producers[0] >= 10,        icon: "👥", desc: "Achetez 10 Ouvriers Manuels" },
+  { id: 7,  name: "Mécanisé",           check: s => s.producers[1] >= 1,         icon: "⚙️", desc: "Achetez 1 Machine Industrielle" },
+  { id: 8,  name: "Automatisé",         check: s => s.producers[2] >= 1,         icon: "🏭", desc: "Achetez 1 Atelier Automatisé" },
+  { id: 9,  name: "Propriétaire d'Usine", check: s => s.producers[3] >= 1,       icon: "🔧", desc: "Achetez 1 Chaîne d'Assemblage" },
+  { id: 10, name: "Robotique",          check: s => s.producers[4] >= 1,         icon: "🤖", desc: "Achetez 1 Complexe Robotisé" },
+  { id: 11, name: "Nano-Tech",          check: s => s.producers[5] >= 1,         icon: "💠", desc: "Achetez 1 Nano-Usine" },
+  { id: 12, name: "Ère Quantique",      check: s => s.producers[6] >= 1,         icon: "⚡", desc: "Achetez 1 Forge Quantique" },
+  { id: 13, name: "Clicker",            check: s => s.totalClicks >= 100,        icon: "🖱️", desc: "Faites 100 clics" },
+  { id: 14, name: "Clicker Fou",        check: s => s.totalClicks >= 1000,       icon: "⌨️", desc: "Faites 1 000 clics" },
+  { id: 15, name: "Clicker Légende",    check: s => s.totalClicks >= 10000,      icon: "🏆", desc: "Faites 10 000 clics" },
+  { id: 16, name: "Novice de la Vis",   check: s => s.totalScrews >= 1000,       icon: "🔩", desc: "Produisez 1 000 vis" },
+  { id: 17, name: "Expert en Vis",      check: s => s.totalScrews >= 1e5,        icon: "⭐", desc: "Produisez 100 000 vis" },
+  { id: 18, name: "Maître de la Vis",   check: s => s.totalScrews >= 1e7,        icon: "🌟", desc: "Produisez 10M vis" },
+  { id: 19, name: "Dieu de la Vis",     check: s => s.totalScrews >= 1e9,        icon: "👑", desc: "Produisez 1Md vis" },
 ];
 
 /* =============================================
@@ -100,7 +115,10 @@ function createInitialState() {
     prestigeCount: 0,
     bankAmount: 0,
     bankUpgrades: BANK_UPGRADES.map(() => false),
-    bankInterestRate: 0.001,
+    bankInterestRate: 0.01,
+    bankNotified: false,
+    rebirthOffered: false,
+    godMode: { active: false, screwMult: 1, moneyMult: 1 },
     settings: {
       theme: 'dark',
       animations: true,
@@ -153,9 +171,11 @@ function getProducerCostN(index, fromOwned, n) {
 function getMaxAffordable(index, maxWanted) {
   const p = PRODUCERS[index];
   const owned = game.producers[index];
+  const maxPossible = Math.min(maxWanted, 100 - owned);
+  if (maxPossible <= 0) return { count: 0, totalCost: 0 };
   let totalCost = 0;
   let count = 0;
-  for (let i = 0; i < maxWanted; i++) {
+  for (let i = 0; i < maxPossible; i++) {
     const c = Math.floor(p.cost * Math.pow(1.15, owned + i));
     if (totalCost + c > game.money) break;
     totalCost += c;
@@ -168,9 +188,10 @@ function getProductionPerSecond() {
   let total = 0;
   const eff = game._upgradeProd || 1;
   const pm = game.prestigeMultiplier;
+  const gm = game.godMode.active ? game.godMode.screwMult : 1;
   game.producers.forEach((count, i) => {
     if (count > 0) {
-      total += PRODUCERS[i].base * count * eff * pm;
+      total += PRODUCERS[i].base * count * eff * pm * gm;
     }
   });
   return total;
@@ -178,12 +199,16 @@ function getProductionPerSecond() {
 
 function getClickPower() {
   const mult = game._upgradeClick || 1;
-  return 1 * mult;
+  const pm = game.prestigeMultiplier || 1;
+  const gm = game.godMode.active ? game.godMode.screwMult : 1;
+  return 1 * mult * pm * gm;
 }
 
 function getScrewValue() {
   const mult = game._upgradeValue || 1;
-  return 1 * mult;
+  const pm = game.prestigeMultiplier || 1;
+  const gm = game.godMode.active ? game.godMode.moneyMult : 1;
+  return 1 * mult * pm * gm;
 }
 
 function getPhaseThreshold(level) {
@@ -227,6 +252,10 @@ function buyProducer(index) {
   try {
     const producer = PRODUCERS[index];
     if (producer.phase > game.currentPhase) return;
+    if (game.producers[index] >= 100) {
+      showNotification("Maximum de 100 " + producer.name + " atteint !", "info");
+      return;
+    }
 
     const mult = game.buyMultiplier || 1;
     const { count, totalCost } = getMaxAffordable(index, mult);
@@ -278,6 +307,10 @@ function buyUpgrade(index) {
 
 function depositBank(fraction) {
   if (_buyingLock) return;
+  if (game.currentPhase < 3) {
+    showNotification("Banque disponible à partir de la Phase 3", "danger");
+    return;
+  }
   _buyingLock = 1;
   try {
     const amount = Math.floor(game.money * fraction * 100) / 100;
@@ -292,6 +325,10 @@ function depositBank(fraction) {
 
 function withdrawBank(fraction) {
   if (_buyingLock) return;
+  if (game.currentPhase < 3) {
+    showNotification("Banque disponible à partir de la Phase 3", "danger");
+    return;
+  }
   _buyingLock = 1;
   try {
     const amount = Math.floor(game.bankAmount * fraction * 100) / 100;
@@ -305,8 +342,55 @@ function withdrawBank(fraction) {
   }
 }
 
+function activateGodMode() {
+  const input = document.getElementById("godmode-code");
+  if (!input) return;
+  if (input.value === "1234") {
+    game.godMode = { active: true, screwMult: 1, moneyMult: 1 };
+    document.getElementById("godmode-status").textContent = "✓ God Mode activé !";
+    document.getElementById("godmode-status").style.color = "var(--success)";
+    document.querySelector("#tab-godmode").style.display = "";
+    showNotification("⚡ God Mode activé ! Panneau disponible dans l'onglet ⚡", "achievement");
+    saveGame();
+    updateUI();
+  } else {
+    document.getElementById("godmode-status").textContent = "✗ Code incorrect";
+    document.getElementById("godmode-status").style.color = "var(--danger)";
+    setTimeout(() => {
+      const st = document.getElementById("godmode-status");
+      if (st) st.textContent = "";
+    }, 2000);
+  }
+}
+
+function setGodScrewMult(mult) {
+  if (!game.godMode.active) return;
+  game.godMode.screwMult = mult;
+  document.querySelectorAll(".gm-screw-btn").forEach(b => b.classList.remove("active"));
+  const btns = document.querySelectorAll(".gm-screw-btn");
+  const map = {1:0, 10:1, 100:2, 1000:3, 10000:4, 100000:5, 1000000:6, 1000000000:7, 10000000:8, 100000000:9, 10000000000:10, 100000000000:11};
+  const idx = map[mult];
+  if (idx !== undefined && btns[idx]) btns[idx].classList.add("active");
+  document.getElementById("gm-screw-label").textContent = "×" + formatNumber(mult);
+  saveGame();
+  updateUI();
+}
+
+function setGodMoneyMult(mult) {
+  if (!game.godMode.active) return;
+  game.godMode.moneyMult = mult;
+  document.querySelectorAll(".gm-money-btn").forEach(b => b.classList.remove("active"));
+  const btns = document.querySelectorAll(".gm-money-btn");
+  const map = {1:0, 10:1, 100:2, 1000:3, 10000:4, 100000:5, 1000000:6, 1000000000:7, 10000000:8, 100000000:9, 10000000000:10, 100000000000:11};
+  const idx = map[mult];
+  if (idx !== undefined && btns[idx]) btns[idx].classList.add("active");
+  document.getElementById("gm-money-label").textContent = "×" + formatNumber(mult);
+  saveGame();
+  updateUI();
+}
+
 function recalcBankRate() {
-  let totalRate = 0.001;
+  let totalRate = 0.01;
   BANK_UPGRADES.forEach((u, i) => {
     if (game.bankUpgrades[i]) {
       totalRate += u.bonus;
@@ -317,6 +401,10 @@ function recalcBankRate() {
 
 function buyBankUpgrade(index) {
   if (_buyingLock) return;
+  if (game.currentPhase < 3) {
+    showNotification("Banque disponible à partir de la Phase 3", "danger");
+    return;
+  }
   _buyingLock = 1;
   try {
     const upgrade = BANK_UPGRADES[index];
@@ -358,6 +446,7 @@ function recalcUpgrades() {
 function checkPhase() {
   let newPhase = game.currentPhase;
   for (const p of PHASES) {
+    if (p.level >= 7 && game.prestigeCount < 1) continue;
     if (game.totalScrews >= p.threshold && p.level > newPhase) {
       newPhase = p.level;
     }
@@ -390,34 +479,45 @@ function checkAchievements() {
 }
 
 /* =============================================
-   PRESTIGE
+   REBIRTH
    ============================================= */
+const REBIRTH_THRESHOLD = 1e12; // 1T base
+
 function canPrestige() {
-  return game.totalScrewsAllTime >= 1000000;
+  const threshold = REBIRTH_THRESHOLD * Math.pow(10, game.prestigeCount);
+  return game.totalMoney >= threshold;
 }
 
 function getPrestigeMultiplier() {
-  return 1 + Math.sqrt(game.totalScrewsAllTime) / 10000;
+  return 2;
 }
 
 function doPrestige() {
   if (!canPrestige()) return;
 
-  const newMult = getPrestigeMultiplier();
-
-  game.prestigeMultiplier = newMult;
+  game.prestigeMultiplier *= getPrestigeMultiplier();
   game.prestigeCount++;
   game.screws = 0;
   game.money = 0;
-  game.totalScrews = game.totalScrewsAllTime;
+  game.totalScrews = 0;
+  game.totalScrewsAllTime = 0;
+  game.totalMoney = 0;
+  game.totalClicks = 0;
   game.producers = PRODUCERS.map(() => 0);
   game.upgrades = UPGRADES.map(() => false);
   game.currentPhase = 1;
   game._upgradeClick = 1;
   game._upgradeProd = 1;
   game._upgradeValue = 1;
+  game.bankAmount = 0;
+  game.bankUpgrades = BANK_UPGRADES.map(() => false);
+  game.bankInterestRate = 0.01;
+  game.bankNotified = false;
+  game.rebirthOffered = false;
+  recalcBankRate();
 
-  showNotification("★ Prestige réussi ! Multiplicateur x" + newMult.toFixed(2), "achievement");
+  const threshold = REBIRTH_THRESHOLD * Math.pow(10, game.prestigeCount);
+  showNotification("★ Rebirth réussi ! ×2 permanent (total ×" + game.prestigeMultiplier + ") — Prochain rebirth: " + formatMoney(threshold), "achievement");
   updateUI();
 }
 
@@ -449,6 +549,9 @@ function saveGame() {
       _upgradeProd: game._upgradeProd,
       _upgradeValue: game._upgradeValue,
       buyMultiplier: game.buyMultiplier,
+      godMode: game.godMode,
+      bankNotified: game.bankNotified,
+      rebirthOffered: game.rebirthOffered,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -470,10 +573,17 @@ function loadGame() {
       "prestigeMultiplier","prestigeCount",
       "bankAmount","bankUpgrades","bankInterestRate","settings",
       "_upgradeClick","_upgradeProd","_upgradeValue",
-      "buyMultiplier"
+      "buyMultiplier",
+      "godMode",
+      "bankNotified",
+      "rebirthOffered"
     ];
     for (const f of fields) {
       if (data[f] !== undefined) game[f] = data[f];
+    }
+
+    if (typeof game.godMode === 'boolean') {
+      game.godMode = game.godMode ? { active: true, screwMult: 1, moneyMult: 1 } : { active: false, screwMult: 1, moneyMult: 1 };
     }
 
     while (game.producers.length < PRODUCERS.length) game.producers.push(0);
@@ -507,6 +617,10 @@ function resetGame() {
   recalcUpgrades();
   recalcBankRate();
   document.documentElement.setAttribute("data-theme", game.settings.theme);
+  const godInput = document.getElementById("godmode-code");
+  if (godInput) godInput.value = "";
+  const godStatus = document.getElementById("godmode-status");
+  if (godStatus) godStatus.textContent = "";
   updateUI();
   checkPhase();
   showScreen('menu');
@@ -531,6 +645,19 @@ function updateUI() {
 
   const prodRate = document.getElementById("production-rate");
   if (prodRate) prodRate.textContent = "(" + formatScrews(prodPS) + " vis/s)";
+
+  const rebirthInfo = document.getElementById("rebirth-info");
+  const rebirthDisplay = document.getElementById("rebirth-display");
+  const rebirthMult = document.getElementById("rebirth-mult-display");
+  if (rebirthInfo && rebirthDisplay && rebirthMult) {
+    if (game.prestigeCount > 0) {
+      rebirthInfo.style.display = "";
+      rebirthDisplay.textContent = "Rebirths: " + game.prestigeCount;
+      rebirthMult.textContent = "×" + game.prestigeMultiplier;
+    } else {
+      rebirthInfo.style.display = "none";
+    }
+  }
 
   const sellBtn = document.getElementById("sell-btn");
   if (sellBtn) {
@@ -561,6 +688,7 @@ function updateUI() {
   updateUpgradesUI();
   updateAchievementsUI();
   updateBankUI();
+  updateBottomBar();
 
   if (!updateUI._lastSave || Date.now() - updateUI._lastSave > 2000) {
     saveGame();
@@ -587,6 +715,9 @@ function updateProducersUI() {
 
     if (locked) {
       btnLabel = "🔒";
+      btnDisabled = true;
+    } else if (owned >= 100) {
+      btnLabel = "MAX";
       btnDisabled = true;
     } else if (mult > 1) {
       const { count, totalCost } = getMaxAffordable(i, mult);
@@ -670,8 +801,8 @@ function updateAchievementsUI() {
     const owned = game.achievements[i];
     html += `
       <div class="achievement-badge ${owned ? 'unlocked' : ''}" 
-           data-name="${a.name}"
-           title="${a.name}">
+           data-name="${owned ? a.name : a.desc}"
+           title="${owned ? a.name : a.desc}">
         ${a.icon}
       </div>`;
   });
@@ -685,33 +816,83 @@ function updateBankUI() {
   const earningsEl = document.getElementById("bank-earnings");
   if (!amountEl) return;
 
-  amountEl.textContent = formatMoney(game.bankAmount);
-  rateEl.textContent = (game.bankInterestRate * 100).toFixed(2) + "%/min";
-  earningsEl.textContent = formatMoney(game.bankAmount * game.bankInterestRate) + "/min";
+  const bankLocked = game.currentPhase < 3;
+
+  if (bankLocked) {
+    amountEl.textContent = "🔒";
+    rateEl.textContent = "0.00%/min";
+    earningsEl.textContent = "$0.00/min";
+  } else {
+    amountEl.textContent = formatMoney(game.bankAmount);
+    rateEl.textContent = (game.bankInterestRate * 100).toFixed(2) + "%/min";
+    earningsEl.textContent = formatMoney(game.bankAmount * game.bankInterestRate) + "/min";
+  }
 
   const container = document.getElementById("bank-upgrades-container");
   if (!container) return;
 
   let html = "";
-  BANK_UPGRADES.forEach((u, i) => {
-    const owned = game.bankUpgrades[i];
-    const canAfford = game.money >= u.cost;
+  if (bankLocked) {
+    html = `<div class="upgrade-item" style="justify-content:center;opacity:0.6;"><span style="font-family:var(--font-mono);font-size:0.8rem;">🔒 Débloqué à la Phase 3</span></div>`;
+  } else {
+    BANK_UPGRADES.forEach((u, i) => {
+      const owned = game.bankUpgrades[i];
+      const canAfford = game.money >= u.cost;
 
-    html += `
-      <div class="upgrade-item ${owned ? 'owned' : ''}">
-        <div class="producer-info">
-          <div class="upgrade-name">${u.icon} ${u.name}</div>
-          <div class="upgrade-effect">${owned ? '✓ Acheté' : '+ ' + (u.bonus * 100).toFixed(2) + '%/min'}</div>
-        </div>
-        <button class="btn ${canAfford && !owned ? 'btn-accent' : ''}" 
-                onclick="buyBankUpgrade(${i})" 
-                ${owned || !canAfford ? 'disabled' : ''}>
-          ${owned ? '✓' : formatMoney(u.cost)}
-        </button>
-      </div>`;
-  });
+      html += `
+        <div class="upgrade-item ${owned ? 'owned' : ''}">
+          <div class="producer-info">
+            <div class="upgrade-name">${u.icon} ${u.name}</div>
+            <div class="upgrade-effect">${owned ? '✓ Acheté' : '+ ' + (u.bonus * 100).toFixed(2) + '%/min'}</div>
+          </div>
+          <button class="btn ${canAfford && !owned ? 'btn-accent' : ''}" 
+                  onclick="buyBankUpgrade(${i})" 
+                  ${owned || !canAfford ? 'disabled' : ''}>
+            ${owned ? '✓' : formatMoney(u.cost)}
+          </button>
+        </div>`;
+    });
+  }
 
   container.innerHTML = html;
+}
+
+function updateBottomBar() {
+  const bankBtn = document.getElementById("tab-bank");
+  const rebirthBtn = document.getElementById("rebirth-btn");
+  const godBtn = document.getElementById("tab-godmode");
+
+  const bankLocked = game.currentPhase < 3;
+  const bankUnlocked = game.currentPhase >= 3;
+  const rebirthAvailable = canPrestige();
+
+  if (godBtn) {
+    godBtn.style.display = game.godMode.active ? "" : "none";
+  }
+
+  if (bankBtn) {
+    if (bankLocked) {
+      bankBtn.textContent = "🔒";
+      bankBtn.classList.remove("has-badge");
+      bankBtn.classList.add("is-locked");
+    } else {
+      bankBtn.textContent = "📊";
+      bankBtn.classList.remove("is-locked");
+      if (!game.bankNotified) {
+        bankBtn.classList.add("has-badge");
+      } else {
+        bankBtn.classList.remove("has-badge");
+      }
+    }
+  }
+
+  if (rebirthBtn) {
+    if (rebirthAvailable && !game.rebirthOffered) {
+      rebirthBtn.classList.add("has-badge");
+    } else {
+      rebirthBtn.classList.remove("has-badge");
+    }
+  }
 }
 
 /* ---- NOTIFICATIONS ---- */
@@ -781,12 +962,26 @@ function showScreen(screen) {
 }
 
 function switchGameTab(tab) {
+  if (tab === 'bank' && game.currentPhase < 3) {
+    if (_currentGameTab === 'bank') {
+      tab = 'production';
+    } else {
+      showNotification("🔒 Vous n'avez pas encore le niveau pour débloquer la banque (Phase 3 requise)", "info");
+      return;
+    }
+  }
+  if (tab === 'godmode' && !game.godMode.active) {
+    tab = 'production';
+  }
   _currentGameTab = tab;
   document.querySelectorAll(".game-tab").forEach(t => t.classList.remove("active"));
   document.getElementById("game-tab-" + tab).classList.add("active");
   document.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
   const btn = document.getElementById("tab-" + tab);
   if (btn) btn.classList.add("active");
+  if (tab === 'bank' && game.currentPhase >= 3 && !game.bankNotified) {
+    game.bankNotified = true;
+  }
   updateUI();
 }
 
@@ -837,21 +1032,41 @@ function confirmReset() {
 
 function confirmPrestige() {
   if (!canPrestige()) {
-    showNotification("Préstige disponible à partir de 1M de vis produites", "danger");
+    showRebirthProgress();
     return;
   }
+  game.rebirthOffered = true;
+  showRebirthOffer();
+}
 
-  const mult = getPrestigeMultiplier();
-  const msg = "⚠️ PRESTIGE\n\n" +
-    "Vous allez réinitialiser votre progression actuelle, mais gagnerez un multiplicateur permanent.\n\n" +
-    "Multiplicateur obtenu : ×" + mult.toFixed(4) + "\n" +
-    "Nombre de prestiges : " + (game.prestigeCount + 1) + "\n\n" +
-    "Vis produites (total) : " + formatScrews(game.totalScrewsAllTime) + "\n\n" +
-    "Continuer ?";
+function showRebirthProgress() {
+  const threshold = REBIRTH_THRESHOLD * Math.pow(10, game.prestigeCount);
+  const pct = Math.min((game.totalMoney / threshold) * 100, 100);
+  document.getElementById("rebirth-progress-money").textContent = formatMoney(game.totalMoney);
+  document.getElementById("rebirth-progress-target").textContent = formatMoney(threshold);
+  document.getElementById("rebirth-progress-pct").textContent = pct.toFixed(2) + "%";
+  document.getElementById("rebirth-progress-bar").style.width = pct + "%";
+  document.getElementById("rebirth-progress-modal").classList.add("active");
+}
 
-  if (confirm(msg)) {
-    doPrestige();
-  }
+function closeRebirthProgress(event) {
+  document.getElementById("rebirth-progress-modal").classList.remove("active");
+}
+
+function showRebirthOffer() {
+  document.getElementById("prestige-mult").textContent = "×" + getPrestigeMultiplier() + ".00";
+  document.getElementById("prestige-count").textContent = game.prestigeCount + 1;
+  document.getElementById("rebirth-offer-modal").classList.add("active");
+}
+
+function acceptRebirth() {
+  document.getElementById("rebirth-offer-modal").classList.remove("active");
+  doPrestige();
+}
+
+function closeRebirthOffer(event) {
+  document.getElementById("rebirth-offer-modal").classList.remove("active");
+  game.rebirthOffered = true;
 }
 
 /* =============================================
@@ -882,6 +1097,11 @@ function gameLoop() {
 
   checkPhase();
   checkAchievements();
+
+  if (canPrestige() && !game.rebirthOffered) {
+    game.rebirthOffered = true;
+    showRebirthOffer();
+  }
 
   updateUI();
 }

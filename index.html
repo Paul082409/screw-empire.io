@@ -55,6 +55,10 @@
         <span class="resource-value profit-value" id="profit-display">0 vis/s</span>
         <span class="resource-label">production</span>
       </div>
+      <div class="resource-item" id="rebirth-info" style="display:none;">
+        <span class="resource-value" id="rebirth-display" style="color:var(--accent);font-size:0.8rem;">Rebirths: 0</span>
+        <span class="resource-label" id="rebirth-mult-display">×1</span>
+      </div>
     </div>
 
     <!-- Onglet Production -->
@@ -169,6 +173,68 @@
       </div>
     </div>
 
+    <!-- Onglet God Mode -->
+    <div id="game-tab-godmode" class="game-tab">
+      <div class="game-container">
+
+        <div class="card">
+          <div class="section-title" style="text-align:center;font-size:1rem;color:var(--accent);margin-bottom:1rem;">
+            ⚡ GOD MODE
+          </div>
+
+          <div class="godmode-section">
+            <div class="godmode-header">
+              <span class="godmode-icon">🔩</span>
+              <span class="godmode-label">Multiplicateur de vis</span>
+              <span class="godmode-value" id="gm-screw-label">×1</span>
+            </div>
+            <div class="godmode-buttons">
+              <button class="btn btn-small gm-screw-btn active" onclick="setGodScrewMult(1)">×1</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(10)">×10</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(100)">×100</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(1000)">×1k</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(10000)">×10k</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(100000)">×100k</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(1000000)">×1M</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(10000000)">×10M</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(100000000)">×100M</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(1000000000)">×1B</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(10000000000)">×10B</button>
+              <button class="btn btn-small gm-screw-btn" onclick="setGodScrewMult(100000000000)">×100B</button>
+            </div>
+          </div>
+
+          <div class="godmode-section" style="margin-top:1.5rem;">
+            <div class="godmode-header">
+              <span class="godmode-icon">💰</span>
+              <span class="godmode-label">Multiplicateur d'argent</span>
+              <span class="godmode-value" id="gm-money-label">×1</span>
+            </div>
+            <div class="godmode-buttons">
+              <button class="btn btn-small gm-money-btn active" onclick="setGodMoneyMult(1)">×1</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(10)">×10</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(100)">×100</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(1000)">×1k</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(10000)">×10k</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(100000)">×100k</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(1000000)">×1M</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(10000000)">×10M</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(100000000)">×100M</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(1000000000)">×1B</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(10000000000)">×10B</button>
+              <button class="btn btn-small gm-money-btn" onclick="setGodMoneyMult(100000000000)">×100B</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="card" style="text-align:center;font-size:0.7rem;color:var(--text-muted);font-family:var(--font-mono);">
+          ⚡ God Mode actif — Ajustez vos multiplicateurs
+        </div>
+
+      </div>
+    </div>
+
     <!-- Barre du bas -->
     <div class="bottom-bar">
       <button class="btn btn-secondary btn-bottom-menu" onclick="showScreen('menu')">← MENU</button>
@@ -176,8 +242,9 @@
         <button class="btn btn-tab active" onclick="switchGameTab('production')" id="tab-production">🏠</button>
         <button class="btn btn-tab" onclick="switchGameTab('upgrades')" id="tab-upgrades">👷</button>
         <button class="btn btn-tab" onclick="switchGameTab('bank')" id="tab-bank">📊</button>
+        <button class="btn btn-tab" onclick="switchGameTab('godmode')" id="tab-godmode" style="display:none;">⚡</button>
       </div>
-      <button class="btn btn-accent btn-bottom-menu" onclick="confirmPrestige()">★ PRESTIGE</button>
+      <button class="btn btn-accent btn-bottom-menu" id="rebirth-btn" onclick="confirmPrestige()">★ REBIRTH</button>
     </div>
   </div>
 
@@ -204,10 +271,73 @@
         </div>
       </div>
 
+      <div class="setting-row">
+        <label>God Mode</label>
+        <div class="godmode-input">
+          <input type="password" id="godmode-code" placeholder="Code" maxlength="10" style="font-family:var(--font-mono);font-size:0.75rem;padding:0.3rem 0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:80px;text-align:center;">
+          <button class="btn btn-small" onclick="activateGodMode()" style="margin-left:0.3rem;">Activer</button>
+        </div>
+      </div>
+      <div id="godmode-status" style="font-size:0.65rem;color:var(--text-muted);font-family:var(--font-mono);text-align:center;margin-bottom:0.5rem;"></div>
+
       <hr>
 
       <button class="btn btn-danger" onclick="confirmReset()">RÉINITIALISER LA PARTIE</button>
       <button class="btn btn-secondary" onclick="toggleSettings()">FERMER</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+        MODAL REBIRTH - PROGRÈS
+        ========================================== -->
+  <div id="rebirth-progress-modal" class="modal-overlay" onclick="closeRebirthProgress(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-close" onclick="closeRebirthProgress(event)">&times;</div>
+      <h2>⚠️ REBIRTH</h2>
+      <p>Vous devez atteindre la somme requise pour débloquer le Rebirth et obtenir un multiplicateur <strong>×2 permanent</strong>.</p>
+      <div class="prestige-stats">
+        <div class="prestige-stat">
+          <span class="prestige-stat-label">Votre argent</span>
+          <span class="prestige-stat-value" id="rebirth-progress-money">$0</span>
+        </div>
+        <div class="prestige-stat">
+          <span class="prestige-stat-label">Objectif</span>
+          <span class="prestige-stat-value" id="rebirth-progress-target" style="color:var(--accent);">-</span>
+        </div>
+        <div class="prestige-stat">
+          <span class="prestige-stat-label">Progression</span>
+          <span class="prestige-stat-value" id="rebirth-progress-pct">0%</span>
+        </div>
+      </div>
+      <div class="progress-bar" style="margin-bottom:1rem;">
+        <div id="rebirth-progress-bar" class="phase-progress" style="width:0%;background:linear-gradient(90deg,var(--success),var(--accent));"></div>
+      </div>
+      <button class="btn btn-secondary" onclick="closeRebirthProgress(event)" style="margin-bottom:0;">FERMER</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+        MODAL REBIRTH - OFFRE
+        ========================================== -->
+  <div id="rebirth-offer-modal" class="modal-overlay" onclick="closeRebirthOffer(event)">
+    <div class="modal-content prestige-modal-content" onclick="event.stopPropagation()">
+      <h2>🎉 10T$ ATTEINT !</h2>
+      <p>Félicitations ! Vous avez atteint <strong>10 000 000 000 000$</strong> !</p>
+      <p>Vous pouvez effectuer un <strong>Rebirth</strong> et obtenir un multiplicateur <strong>×2 permanent</strong> sur les vis <strong>et</strong> l'argent.</p>
+      <div class="prestige-stats">
+        <div class="prestige-stat">
+          <span class="prestige-stat-label">Multiplicateur</span>
+          <span class="prestige-stat-value" id="prestige-mult">×2.00</span>
+        </div>
+        <div class="prestige-stat">
+          <span class="prestige-stat-label">Rebirth N°</span>
+          <span class="prestige-stat-value" id="prestige-count">1</span>
+        </div>
+      </div>
+      <div class="prestige-actions">
+        <button class="btn btn-accent" onclick="acceptRebirth()">✓ ACCEPTER</button>
+        <button class="btn btn-secondary" onclick="closeRebirthOffer(event)">PLUS TARD</button>
+      </div>
     </div>
   </div>
 

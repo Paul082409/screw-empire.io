@@ -485,7 +485,7 @@ body {
   background: rgba(230, 126, 34, 0.1);
 }
 
-.achievement-badge.unlocked:hover::after {
+.achievement-badge:hover::after {
   content: attr(data-name);
   position: absolute;
   bottom: 110%;
@@ -559,6 +559,93 @@ body {
   border-color: var(--accent);
   color: #fff;
   box-shadow: 0 0 12px var(--glow);
+}
+
+.btn-tab,
+#rebirth-btn {
+  position: relative;
+}
+
+.has-badge::after {
+  content: '!';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  background: var(--danger);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  line-height: 1;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.6);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.btn-tab.is-locked {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* ---- GOD MODE ---- */
+.godmode-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.godmode-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.godmode-icon {
+  font-size: 1.3rem;
+}
+
+.godmode-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text);
+  flex: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.godmode-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.godmode-buttons {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.godmode-buttons .btn {
+  flex: 1;
+  min-width: 2.5rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.godmode-buttons .btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 /* ---- BANQUE ---- */
@@ -692,6 +779,73 @@ body {
   border: none;
   border-top: 1px solid var(--border);
   margin: 1rem 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+  font-family: var(--font-mono);
+}
+.modal-close:hover { color: var(--danger); }
+
+.modal-content { position: relative; }
+
+/* ---- PRESTIGE MODAL ---- */
+.prestige-modal-content {
+  text-align: center;
+}
+
+.prestige-modal-content p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.prestige-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.prestige-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.prestige-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+}
+
+.prestige-stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.prestige-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.prestige-actions .btn {
+  flex: 1;
 }
 
 .setting-row {
@@ -837,6 +991,7 @@ body {
   .bottom-bar .btn { padding: 0.35rem 0.5rem; font-size: 0.7rem; }
   .btn-bottom-menu { font-size: 0.65rem !important; padding: 0.3rem 0.5rem !important; }
   .bottom-tabs { gap: 0.25rem; }
+  .has-badge::after { width: 15px; height: 15px; font-size: 9px; top: -4px; right: -4px; }
 }
 
 @media (min-width: 768px) {
