@@ -7,13 +7,13 @@
 
 // ---- DONNÉES DES PRODUCTEURS ----
 const PRODUCERS = [
-  { id: 0,  name: "Ouvrier Manuel",     base: 0.5,   cost: 15,    phase: 1, icon: "👷" },
-  { id: 1,  name: "Machine Industrielle", base: 3,    cost: 100,   phase: 1, icon: "⚙️"  },
-  { id: 2,  name: "Atelier Automatisé",  base: 15,   cost: 500,   phase: 2, icon: "🏭"  },
-  { id: 3,  name: "Chaîne d'Assemblage",  base: 75,   cost: 2500,  phase: 2, icon: "🔧"  },
-  { id: 4,  name: "Complexe Robotisé",   base: 375,  cost: 12500, phase: 3, icon: "🤖"  },
-  { id: 5,  name: "Nano-Usine",          base: 1875, cost: 62500, phase: 4, icon: "💠"  },
-  { id: 6,  name: "Forge Quantique",     base: 9375, cost: 312500, phase: 5, icon: "⚡"  },
+  { id: 0,  name: "Ouvrier Manuel",       base: 0.5,   cost: 15,    phase: 1, icon: "👷" },
+  { id: 1,  name: "Machine Industrielle",  base: 3,     cost: 100,   phase: 1, icon: "⚙️"  },
+  { id: 2,  name: "Atelier Automatisé",    base: 15,    cost: 500,   phase: 2, icon: "🏭"  },
+  { id: 3,  name: "Chaîne d'Assemblage",   base: 75,    cost: 2500,  phase: 2, icon: "🔧"  },
+  { id: 4,  name: "Complexe Robotisé",     base: 375,   cost: 12500, phase: 3, icon: "🤖"  },
+  { id: 5,  name: "Nano-Usine",            base: 1875,  cost: 62500, phase: 4, icon: "💠"  },
+  { id: 6,  name: "Forge Quantique",       base: 9375,  cost: 312500,phase: 5, icon: "⚡"  },
 ];
 
 // ---- DONNÉES DES AMÉLIORATIONS ----
@@ -128,6 +128,29 @@ function getProducerCost(producerIndex) {
   return Math.floor(p.cost * Math.pow(1.15, owned));
 }
 
+function getProducerCostN(index, fromOwned, n) {
+  const p = PRODUCERS[index];
+  let total = 0;
+  for (let i = 0; i < n; i++) {
+    total += Math.floor(p.cost * Math.pow(1.15, fromOwned + i));
+  }
+  return total;
+}
+
+function getMaxAffordable(index, maxWanted) {
+  const p = PRODUCERS[index];
+  const owned = game.producers[index];
+  let totalCost = 0;
+  let count = 0;
+  for (let i = 0; i < maxWanted; i++) {
+    const c = Math.floor(p.cost * Math.pow(1.15, owned + i));
+    if (totalCost + c > game.money) break;
+    totalCost += c;
+    count++;
+  }
+  return { count, totalCost };
+}
+
 function getProductionPerSecond() {
   let total = 0;
   const eff = game._upgradeProd || 1;
@@ -158,6 +181,8 @@ function getPhaseThreshold(level) {
 /* =============================================
    LOGIQUE DU JEU
    ============================================= */
+let _buyingLock = 0;
+
 function clickProduce() {
   const power = getClickPower();
   game.screws += power;
@@ -183,55 +208,59 @@ function sellScrews() {
 }
 
 function buyProducer(index) {
-  const producer = PRODUCERS[index];
-  if (producer.phase > game.currentPhase) return;
-  const cost = getProducerCost(index);
-  const mult = game.buyMultiplier || 1;
+  if (_buyingLock) return;
+  _buyingLock = 1;
 
-  let canBuy = 0;
-  let totalCost = 0;
-  for (let i = 0; i < 100; i++) {
-    const c = Math.floor(producer.cost * Math.pow(1.15, game.producers[index] + canBuy));
-    if (totalCost + c > game.money) break;
-    totalCost += c;
-    canBuy++;
-    if (canBuy >= mult) break;
+  try {
+    const producer = PRODUCERS[index];
+    if (producer.phase > game.currentPhase) return;
+
+    const mult = game.buyMultiplier || 1;
+    const { count, totalCost } = getMaxAffordable(index, mult);
+
+    if (count === 0) return;
+
+    game.money -= totalCost;
+    game.producers[index] += count;
+
+    if (count >= 10 && game.settings.animations) {
+      showNotification("+" + count + " " + producer.name + " recruté(s) !", "success");
+    }
+
+    updateUI();
+    checkAchievements();
+    checkPhase();
+  } finally {
+    _buyingLock = 0;
   }
-
-  if (canBuy === 0) return;
-
-  game.money -= totalCost;
-  game.producers[index] += canBuy;
-
-  if (canBuy >= 10 && game.settings.animations) {
-    showNotification("+" + canBuy + " " + producer.name + " recruté(s) !", "success");
-  }
-
-  updateUI();
-  checkAchievements();
-  checkPhase();
 }
 
 function buyUpgrade(index) {
-  const upgrade = UPGRADES[index];
-  if (game.upgrades[index]) return;
-  if (upgrade.phase > game.currentPhase) return;
-  if (game.money < upgrade.cost) return;
+  if (_buyingLock) return;
+  _buyingLock = 1;
 
-  game.money -= upgrade.cost;
-  game.upgrades[index] = true;
+  try {
+    const upgrade = UPGRADES[index];
+    if (game.upgrades[index]) return;
+    if (upgrade.phase > game.currentPhase) return;
+    if (game.money < upgrade.cost) return;
 
-  // Apply upgrade effect
-  recalcUpgrades();
+    game.money -= upgrade.cost;
+    game.upgrades[index] = true;
 
-  const msg = upgrade.name + " acheté !";
-  showNotification(msg, "info");
-  if (game.settings.animations) {
-    showFloatingText(msg, "upgrade");
+    recalcUpgrades();
+
+    const msg = upgrade.name + " acheté !";
+    showNotification(msg, "info");
+    if (game.settings.animations) {
+      showFloatingText(msg, "upgrade");
+    }
+
+    updateUI();
+    checkAchievements();
+  } finally {
+    _buyingLock = 0;
   }
-
-  updateUI();
-  checkAchievements();
 }
 
 function recalcUpgrades() {
@@ -268,7 +297,6 @@ function checkPhase() {
     const phaseData = PHASES.find(p => p.level === newPhase);
     showNotification("Phase " + newPhase + " : " + phaseData.name + " débloquée !", "achievement");
 
-    // Auto-sell unlocks at phase 3
     if (newPhase >= 3) {
       game.autoSell = true;
       const toggle = document.getElementById("autosell-toggle");
@@ -279,7 +307,6 @@ function checkPhase() {
       showNotification("Vente automatique activée !", "info");
     }
 
-    // New producers available notification
     const newProducers = PRODUCERS.filter(p => p.phase === newPhase);
     if (newProducers.length > 0) {
       showNotification("Nouveaux systèmes de production disponibles !", "info");
@@ -365,6 +392,7 @@ function saveGame() {
       _upgradeClick: game._upgradeClick,
       _upgradeProd: game._upgradeProd,
       _upgradeValue: game._upgradeValue,
+      buyMultiplier: game.buyMultiplier,
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch (e) {
@@ -384,36 +412,32 @@ function loadGame() {
       "screws","money","totalScrews","totalScrewsAllTime","totalMoney","totalClicks",
       "producers","upgrades","achievements","currentPhase","autoSell",
       "prestigeMultiplier","prestigeCount","settings",
-      "_upgradeClick","_upgradeProd","_upgradeValue"
+      "_upgradeClick","_upgradeProd","_upgradeValue",
+      "buyMultiplier"
     ];
     for (const f of fields) {
       if (data[f] !== undefined) game[f] = data[f];
     }
 
-    // Ensure array lengths match
     while (game.producers.length < PRODUCERS.length) game.producers.push(0);
     while (game.upgrades.length < UPGRADES.length) game.upgrades.push(false);
     while (game.achievements.length < ACHIEVEMENTS.length) game.achievements.push(false);
 
-    // Apply theme
     const savedTheme = game.settings.theme || 'dark';
     document.documentElement.setAttribute("data-theme", savedTheme);
     const themeToggle = document.getElementById("theme-toggle");
     if (themeToggle) themeToggle.checked = (savedTheme === 'dark');
 
-    // Animations toggle
     const animToggle = document.getElementById("anim-toggle");
     if (animToggle) animToggle.checked = game.settings.animations !== false;
     document.documentElement.setAttribute("data-animations", game.settings.animations !== false ? "on" : "off");
 
-    // Auto-sell toggle
     const asToggle = document.getElementById("autosell-toggle");
     if (asToggle) {
       asToggle.disabled = game.currentPhase < 3;
       asToggle.checked = game.autoSell && game.currentPhase >= 3;
     }
 
-    // Recalc upgrade multipliers
     recalcUpgrades();
 
     return true;
@@ -453,19 +477,15 @@ function updateUI() {
     profit.style.color = game.autoSell ? "" : (game.currentPhase >= 3 ? "" : "var(--text-muted)");
   }
 
-  // Production rate
   const prodRate = document.getElementById("production-rate");
   if (prodRate) prodRate.textContent = "(" + formatScrews(prodPS) + " vis/s)";
 
-  // Sell button
   const sellBtn = document.getElementById("sell-btn");
   if (sellBtn) {
-    const totalValue = game.screws * getScrewValue();
     sellBtn.textContent = "💰 VENDRE (" + formatScrews(game.screws) + " vis)";
     sellBtn.disabled = game.screws <= 0;
   }
 
-  // Phase
   const phaseName = document.getElementById("phase-name");
   const phaseScrews = document.getElementById("phase-screws");
   const phaseProgress = document.getElementById("phase-progress");
@@ -485,16 +505,10 @@ function updateUI() {
     if (phaseProgress) phaseProgress.style.width = "100%";
   }
 
-  // Producers
   updateProducersUI();
-
-  // Upgrades
   updateUpgradesUI();
-
-  // Achievements
   updateAchievementsUI();
 
-  // Sauvegarde automatique (limitée à toutes les 2s)
   if (!updateUI._lastSave || Date.now() - updateUI._lastSave > 2000) {
     saveGame();
     updateUI._lastSave = Date.now();
@@ -505,12 +519,40 @@ function updateProducersUI() {
   const container = document.getElementById("producers-container");
   if (!container) return;
 
+  const mult = game.buyMultiplier || 1;
+
   let html = "";
   PRODUCERS.forEach((p, i) => {
     const owned = game.producers[i];
     const cost = getProducerCost(i);
     const locked = p.phase > game.currentPhase;
     const actualProd = owned > 0 ? (p.base * owned * (game._upgradeProd || 1) * game.prestigeMultiplier) : 0;
+
+    let btnLabel = "";
+    let btnDisabled = locked;
+    let btnClass = "";
+
+    if (locked) {
+      btnLabel = "🔒";
+      btnDisabled = true;
+    } else if (mult > 1) {
+      const { count, totalCost } = getMaxAffordable(i, mult);
+      if (count > 0) {
+        btnLabel = "ACHETER ×" + count + "<br><span class=\"cost-text\">" + formatMoney(totalCost) + "</span>";
+        btnClass = "btn-primary";
+      } else {
+        btnLabel = "ACHETER ×" + mult + "<br><span class=\"cost-text\">" + formatMoney(cost) + "</span>";
+        btnDisabled = true;
+      }
+    } else {
+      if (game.money >= cost) {
+        btnLabel = "ACHETER<br><span class=\"cost-text\">" + formatMoney(cost) + "</span>";
+        btnClass = "btn-primary";
+      } else {
+        btnLabel = "ACHETER<br><span class=\"cost-text\">" + formatMoney(cost) + "</span>";
+        btnDisabled = true;
+      }
+    }
 
     html += `
       <div class="producer-item ${locked ? 'locked' : ''}">
@@ -519,10 +561,10 @@ function updateProducersUI() {
           <div class="producer-stats">${owned > 0 ? '+' + formatScrews(actualProd) + ' vis/s' : '—'}</div>
         </div>
         <div class="producer-count">${owned}</div>
-        <button class="btn ${game.money >= cost && !locked ? 'btn-primary' : ''}" 
+        <button class="btn ${btnClass}" 
                 onclick="buyProducer(${i})" 
-                ${locked || game.money < cost ? 'disabled' : ''}>
-          ACHETER<br><span class="cost-text">${formatMoney(cost)}</span>
+                ${btnDisabled ? 'disabled' : ''}>
+          ${btnLabel}
         </button>
       </div>`;
   });
@@ -687,6 +729,8 @@ function buyMultiplierSet(mult) {
   const map = {1:0, 10:1, 100:2};
   const idx = map[mult] || 0;
   if (btns[idx]) btns[idx].classList.add("active");
+  saveGame();
+  updateProducersUI();
 }
 
 /* ---- CONFIRMATIONS ---- */
@@ -724,19 +768,17 @@ let saveTimer = 0;
 
 function gameLoop() {
   const now = Date.now();
-  const dt = Math.min((now - lastTick) / 1000, 5); // cap at 5s to avoid huge jumps
+  const dt = Math.min((now - lastTick) / 1000, 5);
   lastTick = now;
 
   if (!game) return;
 
-  // Calculate production
   const prodPS = getProductionPerSecond();
   const produced = prodPS * dt;
   game.screws += produced;
   game.totalScrews += produced;
   game.totalScrewsAllTime += produced;
 
-  // Auto-sell
   if (game.autoSell && game.currentPhase >= 3) {
     const value = getScrewValue();
     const earned = game.screws * value;
@@ -745,39 +787,29 @@ function gameLoop() {
     game.screws = 0;
   }
 
-  // Check phase and achievements
   checkPhase();
   checkAchievements();
 
-  // Update UI
   updateUI();
 }
 
 function init() {
-  // Load or create state
   const loaded = loadGame();
   if (!loaded) {
     game = createInitialState();
     recalcUpgrades();
   }
 
-  // Show menu on load
   showScreen('menu');
 
-  // Set initial theme
   document.documentElement.setAttribute("data-theme", game.settings.theme || 'dark');
   document.documentElement.setAttribute("data-animations", game.settings.animations !== false ? "on" : "off");
 
-  // Start game loop (target 10fps, but time-based)
   setInterval(gameLoop, 100);
-
-  // Auto-save every 30s
   setInterval(saveGame, 30000);
 
-  // Save on page close
   window.addEventListener("beforeunload", saveGame);
 
-  // Keyboard shortcut: space to produce
   document.addEventListener("keydown", (e) => {
     if (e.key === " " && !e.repeat) {
       e.preventDefault();
