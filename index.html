@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark" data-animations="on">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Screw Empire - Jeu de production industrielle incrémental. Produisez des vis, automatisez votre usine, dominez le marché !">
+  <meta name="theme-color" content="#0a0a0f">
+  <title>Screw Empire - Jeu de Production Industrielle</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔩</text></svg>">
+</head>
+<body>
+  <!-- ==========================================
+       ÉCRAN MENU PRINCIPAL
+       ========================================== -->
+  <div id="menu-screen" class="screen active">
+    <div class="menu-content">
+      <h1 class="game-title">Screw Empire</h1>
+      <p class="subtitle">Jeu de Production Industrielle</p>
+
+      <div class="menu-buttons">
+        <button class="btn btn-primary btn-large" onclick="showScreen('game')">
+          JOUER
+        </button>
+        <button class="btn btn-secondary" onclick="toggleSettings()">
+          PARAMÈTRES
+        </button>
+        <button class="btn btn-danger" onclick="confirmReset()">
+          RÉINITIALISER
+        </button>
+      </div>
+
+      <p class="version">v1.0 &bull; Idle Factory Game</p>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       ÉCRAN DE JEU
+       ========================================== -->
+  <div id="game-screen" class="screen">
+    <div class="game-container">
+
+      <!-- Ressources -->
+      <div id="resource-bar" class="card">
+        <div class="resource-item">
+          <span class="resource-icon">🔩</span>
+          <span class="resource-value" id="screw-display">0</span>
+          <span class="resource-label">vis</span>
+        </div>
+        <div class="resource-item">
+          <span class="resource-icon">💰</span>
+          <span class="resource-value" id="money-display">$0</span>
+          <span class="resource-label">argent</span>
+        </div>
+        <div class="resource-item">
+          <span class="resource-value profit-value" id="profit-display">$0.00/s</span>
+          <span class="resource-label">profit</span>
+        </div>
+      </div>
+
+      <!-- Clic principal -->
+      <div class="card click-area">
+        <button class="btn btn-primary btn-produce" id="produce-btn" onclick="clickProduce()">
+          🔩 PRODUIRE DES VIS
+        </button>
+        <div class="sell-row">
+          <button class="btn btn-secondary" id="sell-btn" onclick="sellScrews()" disabled>
+            💰 VENDRE (0 vis)
+          </button>
+        </div>
+      </div>
+
+      <!-- Progression des phases -->
+      <div class="card phase-info">
+        <div class="phase-header">
+          <span id="phase-name">Phase 1 : Production Simple</span>
+          <span id="phase-screws">0 / 1 000 vis</span>
+        </div>
+        <div class="progress-bar">
+          <div id="phase-progress" class="phase-progress" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Producteurs -->
+      <div class="card section">
+        <div class="section-title">
+          <span>Production <span class="production-rate" id="production-rate">(0 vis/s)</span></span>
+          <span class="buy-multiplier">
+            <button class="btn btn-small active" onclick="buyMultiplierSet(1)">×1</button>
+            <button class="btn btn-small" onclick="buyMultiplierSet(10)">×10</button>
+            <button class="btn btn-small" onclick="buyMultiplierSet(100)">×100</button>
+          </span>
+        </div>
+        <div id="producers-container"></div>
+      </div>
+
+      <!-- Améliorations -->
+      <div class="card section">
+        <div class="section-title">
+          <span>Améliorations</span>
+        </div>
+        <div id="upgrades-container"></div>
+      </div>
+
+      <!-- Succès -->
+      <div class="card section">
+        <div class="section-title">
+          <span>Succès <span id="achievement-counter">(0/20)</span></span>
+        </div>
+        <div id="achievements-container"></div>
+      </div>
+
+    </div>
+
+    <!-- Barre du bas -->
+    <div class="bottom-bar">
+      <button class="btn btn-secondary" onclick="showScreen('menu')">← MENU</button>
+      <button class="btn btn-accent" onclick="confirmPrestige()">★ PRESTIGE</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL PARAMÈTRES
+       ========================================== -->
+  <div id="settings-modal" class="modal-overlay" onclick="closeSettingsOutside(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h2>Paramètres</h2>
+
+      <div class="setting-row">
+        <label>Thème sombre</label>
+        <div class="toggle">
+          <input type="checkbox" id="theme-toggle" checked onchange="toggleTheme()">
+          <span class="toggle-slider"></span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Animations</label>
+        <div class="toggle">
+          <input type="checkbox" id="anim-toggle" checked onchange="toggleAnimations()">
+          <span class="toggle-slider"></span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Vente automatique</label>
+        <div class="toggle">
+          <input type="checkbox" id="autosell-toggle" onchange="toggleAutoSell()" disabled>
+          <span class="toggle-slider"></span>
+        </div>
+        <span class="setting-note">Phase 3+</span>
+      </div>
+
+      <hr>
+
+      <button class="btn btn-danger" onclick="confirmReset()">RÉINITIALISER LA PARTIE</button>
+      <button class="btn btn-secondary" onclick="toggleSettings()">FERMER</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       NOTIFICATIONS
+       ========================================== -->
+  <div id="notification-container"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
