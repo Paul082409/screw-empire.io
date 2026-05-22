@@ -35,6 +35,17 @@ const UPGRADES = [
   { id: 14, name: "Monopole Mondial",       effect: "value",    mult: 25,  cost: 5e8,     phase: 5, icon: "🌍" },
 ];
 
+// ---- DONNÉES DES AMÉLIORATIONS BANCAIRES ----
+const BANK_UPGRADES = [
+  { id: 0,  name: "Compte Épargne",         bonus: 0.0005, cost: 500,    icon: "🏦" },
+  { id: 1,  name: "Livret Premium",         bonus: 0.0010, cost: 2000,   icon: "📋" },
+  { id: 2,  name: "Obligations d'État",     bonus: 0.0015, cost: 10000,  icon: "📜" },
+  { id: 3,  name: "Fonds de Placement",     bonus: 0.0025, cost: 50000,  icon: "📈" },
+  { id: 4,  name: "Investissement Pro",     bonus: 0.0040, cost: 250000, icon: "💼" },
+  { id: 5,  name: "Capital-Risque",         bonus: 0.0060, cost: 1e6,    icon: "🚀" },
+  { id: 6,  name: "Holding Internationale", bonus: 0.0100, cost: 5e6,    icon: "🌍" },
+];
+
 // ---- PHASES ----
 const PHASES = [
   { level: 1, name: "Production Simple",     threshold: 0,          desc: "Clics et production de base" },
@@ -87,6 +98,9 @@ function createInitialState() {
     currentPhase: 1,
     prestigeMultiplier: 1,
     prestigeCount: 0,
+    bankAmount: 0,
+    bankUpgrades: BANK_UPGRADES.map(() => false),
+    bankInterestRate: 0.001,
     settings: {
       theme: 'dark',
       animations: true,
@@ -111,7 +125,7 @@ function formatNumber(n) {
 }
 
 function formatMoney(n) {
-  if (Math.abs(n) < 0.01 && n > 0) return "$" + n.toExponential(2);
+  if (Math.abs(n) < 0.005) return "$0.00";
   if (Math.abs(n) < 1000) return "$" + n.toFixed(2);
   return "$" + formatNumber(n);
 }
@@ -262,6 +276,64 @@ function buyUpgrade(index) {
   }
 }
 
+function depositBank(fraction) {
+  if (_buyingLock) return;
+  _buyingLock = 1;
+  try {
+    const amount = Math.floor(game.money * fraction * 100) / 100;
+    if (amount <= 0) return;
+    game.money -= amount;
+    game.bankAmount += amount;
+    updateUI();
+  } finally {
+    _buyingLock = 0;
+  }
+}
+
+function withdrawBank(fraction) {
+  if (_buyingLock) return;
+  _buyingLock = 1;
+  try {
+    const amount = Math.floor(game.bankAmount * fraction * 100) / 100;
+    if (amount <= 0) return;
+    game.bankAmount -= amount;
+    if (game.bankAmount < 0.001) game.bankAmount = 0;
+    game.money += amount;
+    updateUI();
+  } finally {
+    _buyingLock = 0;
+  }
+}
+
+function recalcBankRate() {
+  let totalRate = 0.001;
+  BANK_UPGRADES.forEach((u, i) => {
+    if (game.bankUpgrades[i]) {
+      totalRate += u.bonus;
+    }
+  });
+  game.bankInterestRate = totalRate;
+}
+
+function buyBankUpgrade(index) {
+  if (_buyingLock) return;
+  _buyingLock = 1;
+  try {
+    const upgrade = BANK_UPGRADES[index];
+    if (game.bankUpgrades[index]) return;
+    if (game.money < upgrade.cost) return;
+
+    game.money -= upgrade.cost;
+    game.bankUpgrades[index] = true;
+    recalcBankRate();
+
+    showNotification(upgrade.name + " acheté ! Taux: +" + (upgrade.bonus * 100).toFixed(2) + "%/min", "info");
+    updateUI();
+  } finally {
+    _buyingLock = 0;
+  }
+}
+
 function recalcUpgrades() {
   let clickMult = 1;
   let prodMult = 1;
@@ -368,6 +440,9 @@ function saveGame() {
       achievements: game.achievements,
       currentPhase: game.currentPhase,
       prestigeMultiplier: game.prestigeMultiplier,
+      bankAmount: game.bankAmount,
+      bankUpgrades: game.bankUpgrades,
+      bankInterestRate: game.bankInterestRate,
       prestigeCount: game.prestigeCount,
       settings: game.settings,
       _upgradeClick: game._upgradeClick,
@@ -392,7 +467,8 @@ function loadGame() {
     const fields = [
       "screws","money","totalScrews","totalScrewsAllTime","totalMoney","totalClicks",
       "producers","upgrades","achievements","currentPhase",
-      "prestigeMultiplier","prestigeCount","settings",
+      "prestigeMultiplier","prestigeCount",
+      "bankAmount","bankUpgrades","bankInterestRate","settings",
       "_upgradeClick","_upgradeProd","_upgradeValue",
       "buyMultiplier"
     ];
@@ -403,6 +479,9 @@ function loadGame() {
     while (game.producers.length < PRODUCERS.length) game.producers.push(0);
     while (game.upgrades.length < UPGRADES.length) game.upgrades.push(false);
     while (game.achievements.length < ACHIEVEMENTS.length) game.achievements.push(false);
+    while (game.bankUpgrades.length < BANK_UPGRADES.length) game.bankUpgrades.push(false);
+
+    recalcBankRate();
 
     const savedTheme = game.settings.theme || 'dark';
     document.documentElement.setAttribute("data-theme", savedTheme);
@@ -426,6 +505,7 @@ function resetGame() {
   localStorage.removeItem(SAVE_KEY);
   game = createInitialState();
   recalcUpgrades();
+  recalcBankRate();
   document.documentElement.setAttribute("data-theme", game.settings.theme);
   updateUI();
   checkPhase();
@@ -445,10 +525,8 @@ function updateUI() {
   if (money) money.textContent = formatMoney(game.money);
 
   const prodPS = getProductionPerSecond();
-  const value = getScrewValue();
-  const profitPS = prodPS * value;
   if (profit) {
-    profit.textContent = formatMoney(profitPS) + "/s";
+    profit.textContent = formatScrews(prodPS) + " vis/s";
   }
 
   const prodRate = document.getElementById("production-rate");
@@ -482,6 +560,7 @@ function updateUI() {
   updateProducersUI();
   updateUpgradesUI();
   updateAchievementsUI();
+  updateBankUI();
 
   if (!updateUI._lastSave || Date.now() - updateUI._lastSave > 2000) {
     saveGame();
@@ -600,6 +679,41 @@ function updateAchievementsUI() {
   container.innerHTML = html;
 }
 
+function updateBankUI() {
+  const amountEl = document.getElementById("bank-amount");
+  const rateEl = document.getElementById("bank-rate");
+  const earningsEl = document.getElementById("bank-earnings");
+  if (!amountEl) return;
+
+  amountEl.textContent = formatMoney(game.bankAmount);
+  rateEl.textContent = (game.bankInterestRate * 100).toFixed(2) + "%/min";
+  earningsEl.textContent = formatMoney(game.bankAmount * game.bankInterestRate) + "/min";
+
+  const container = document.getElementById("bank-upgrades-container");
+  if (!container) return;
+
+  let html = "";
+  BANK_UPGRADES.forEach((u, i) => {
+    const owned = game.bankUpgrades[i];
+    const canAfford = game.money >= u.cost;
+
+    html += `
+      <div class="upgrade-item ${owned ? 'owned' : ''}">
+        <div class="producer-info">
+          <div class="upgrade-name">${u.icon} ${u.name}</div>
+          <div class="upgrade-effect">${owned ? '✓ Acheté' : '+ ' + (u.bonus * 100).toFixed(2) + '%/min'}</div>
+        </div>
+        <button class="btn ${canAfford && !owned ? 'btn-accent' : ''}" 
+                onclick="buyBankUpgrade(${i})" 
+                ${owned || !canAfford ? 'disabled' : ''}>
+          ${owned ? '✓' : formatMoney(u.cost)}
+        </button>
+      </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
 /* ---- NOTIFICATIONS ---- */
 function showNotification(message, type) {
   const container = document.getElementById("notification-container");
@@ -654,14 +768,26 @@ function showFloatingText(text, type) {
 }
 
 /* ---- ÉCRANS ---- */
+let _currentGameTab = 'production';
+
 function showScreen(screen) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   if (screen === 'game') {
     document.getElementById("game-screen").classList.add("active");
-    updateUI();
+    switchGameTab(_currentGameTab);
   } else {
     document.getElementById("menu-screen").classList.add("active");
   }
+}
+
+function switchGameTab(tab) {
+  _currentGameTab = tab;
+  document.querySelectorAll(".game-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("game-tab-" + tab).classList.add("active");
+  document.querySelectorAll(".btn-tab").forEach(b => b.classList.remove("active"));
+  const btn = document.getElementById("tab-" + tab);
+  if (btn) btn.classList.add("active");
+  updateUI();
 }
 
 /* ---- PARAMÈTRES ---- */
@@ -747,6 +873,13 @@ function gameLoop() {
   game.totalScrews += produced;
   game.totalScrewsAllTime += produced;
 
+  if (game.bankAmount > 0) {
+    const minutes = dt / 60;
+    const interest = game.bankAmount * game.bankInterestRate * minutes;
+    game.bankAmount += interest;
+    game.totalMoney += interest;
+  }
+
   checkPhase();
   checkAchievements();
 
@@ -758,6 +891,7 @@ function init() {
   if (!loaded) {
     game = createInitialState();
     recalcUpgrades();
+    recalcBankRate();
   }
 
   showScreen('menu');

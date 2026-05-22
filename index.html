@@ -38,84 +38,146 @@
        ÉCRAN DE JEU
        ========================================== -->
   <div id="game-screen" class="screen">
-    <div class="game-container">
 
-      <!-- Ressources -->
-      <div id="resource-bar" class="card">
-        <div class="resource-item">
-          <span class="resource-icon">🔩</span>
-          <span class="resource-value" id="screw-display">0</span>
-          <span class="resource-label">vis</span>
-        </div>
-        <div class="resource-item">
-          <span class="resource-icon">💰</span>
-          <span class="resource-value" id="money-display">$0</span>
-          <span class="resource-label">argent</span>
-        </div>
-        <div class="resource-item">
-          <span class="resource-value profit-value" id="profit-display">$0.00/s</span>
-          <span class="resource-label">profit</span>
-        </div>
+    <!-- Ressources (visible sur tous les onglets) -->
+    <div id="resource-bar" class="card">
+      <div class="resource-item">
+        <span class="resource-icon">🔩</span>
+        <span class="resource-value" id="screw-display">0</span>
+        <span class="resource-label">vis</span>
       </div>
+      <div class="resource-item">
+        <span class="resource-icon">💰</span>
+        <span class="resource-value" id="money-display">$0</span>
+        <span class="resource-label">argent</span>
+      </div>
+      <div class="resource-item">
+        <span class="resource-value profit-value" id="profit-display">0 vis/s</span>
+        <span class="resource-label">production</span>
+      </div>
+    </div>
 
-      <!-- Clic principal -->
-      <div class="card click-area">
-        <button class="btn btn-primary btn-produce" id="produce-btn" onclick="clickProduce()">
-          🔩 PRODUIRE DES VIS
-        </button>
-        <div class="sell-row">
-          <button class="btn btn-secondary" id="sell-btn" onclick="sellScrews()" disabled>
-            💰 VENDRE (0 vis)
+    <!-- Onglet Production -->
+    <div id="game-tab-production" class="game-tab active">
+      <div class="game-container">
+
+        <div class="card click-area">
+          <button class="btn btn-primary btn-produce" id="produce-btn" onclick="clickProduce()">
+            🔩 PRODUIRE DES VIS
           </button>
+          <div class="sell-row">
+            <button class="btn btn-secondary" id="sell-btn" onclick="sellScrews()" disabled>
+              💰 VENDRE (0 vis)
+            </button>
+          </div>
         </div>
-      </div>
 
-      <!-- Progression des phases -->
-      <div class="card phase-info">
-        <div class="phase-header">
-          <span id="phase-name">Phase 1 : Production Simple</span>
-          <span id="phase-screws">0 / 1 000 vis</span>
+        <div class="card phase-info">
+          <div class="phase-header">
+            <span id="phase-name">Phase 1 : Production Simple</span>
+            <span id="phase-screws">0 / 1 000 vis</span>
+          </div>
+          <div class="progress-bar">
+            <div id="phase-progress" class="phase-progress" style="width:0%"></div>
+          </div>
         </div>
-        <div class="progress-bar">
-          <div id="phase-progress" class="phase-progress" style="width:0%"></div>
-        </div>
-      </div>
 
-      <!-- Producteurs -->
-      <div class="card section">
-        <div class="section-title">
-          <span>Production <span class="production-rate" id="production-rate">(0 vis/s)</span></span>
-          <span class="buy-multiplier">
-            <button class="btn btn-small active" onclick="buyMultiplierSet(1)">×1</button>
-            <button class="btn btn-small" onclick="buyMultiplierSet(10)">×10</button>
-            <button class="btn btn-small" onclick="buyMultiplierSet(100)">×100</button>
-          </span>
+        <div class="card section">
+          <div class="section-title">
+            <span>Production <span class="production-rate" id="production-rate">(0 vis/s)</span></span>
+            <span class="buy-multiplier">
+              <button class="btn btn-small active" onclick="buyMultiplierSet(1)">×1</button>
+              <button class="btn btn-small" onclick="buyMultiplierSet(10)">×10</button>
+              <button class="btn btn-small" onclick="buyMultiplierSet(100)">×100</button>
+            </span>
+          </div>
+          <div id="producers-container"></div>
         </div>
-        <div id="producers-container"></div>
-      </div>
 
-      <!-- Améliorations -->
-      <div class="card section">
-        <div class="section-title">
-          <span>Améliorations</span>
+      </div>
+    </div>
+
+    <!-- Onglet Améliorations -->
+    <div id="game-tab-upgrades" class="game-tab">
+      <div class="game-container">
+
+        <div class="card section">
+          <div class="section-title">
+            <span>Améliorations</span>
+          </div>
+          <div id="upgrades-container"></div>
         </div>
-        <div id="upgrades-container"></div>
-      </div>
 
-      <!-- Succès -->
-      <div class="card section">
-        <div class="section-title">
-          <span>Succès <span id="achievement-counter">(0/20)</span></span>
+        <div class="card section">
+          <div class="section-title">
+            <span>Succès <span id="achievement-counter">(0/20)</span></span>
+          </div>
+          <div id="achievements-container"></div>
         </div>
-        <div id="achievements-container"></div>
-      </div>
 
+      </div>
+    </div>
+
+    <!-- Onglet Banque -->
+    <div id="game-tab-bank" class="game-tab">
+      <div class="game-container">
+
+        <div class="card bank-card">
+          <div class="bank-header">
+            <span class="bank-icon">🏦</span>
+            <span class="bank-title">Banque Centrale</span>
+          </div>
+
+          <div class="bank-stats">
+            <div class="bank-stat">
+              <span class="bank-stat-label">Déposé</span>
+              <span class="bank-stat-value" id="bank-amount">$0.00</span>
+            </div>
+            <div class="bank-stat">
+              <span class="bank-stat-label">Taux d'intérêt</span>
+              <span class="bank-stat-value" id="bank-rate">0.00%/min</span>
+            </div>
+            <div class="bank-stat">
+              <span class="bank-stat-label">Revenus</span>
+              <span class="bank-stat-value" id="bank-earnings">$0.00/min</span>
+            </div>
+          </div>
+
+          <div class="bank-actions">
+            <div class="bank-action-title">Déposer</div>
+            <div class="bank-btn-row">
+              <button class="btn btn-primary" onclick="depositBank(0.25)">25%</button>
+              <button class="btn btn-primary" onclick="depositBank(0.5)">50%</button>
+              <button class="btn btn-primary" onclick="depositBank(1)">TOUT</button>
+            </div>
+            <div class="bank-action-title">Retirer</div>
+            <div class="bank-btn-row">
+              <button class="btn btn-accent" onclick="withdrawBank(0.25)">25%</button>
+              <button class="btn btn-accent" onclick="withdrawBank(0.5)">50%</button>
+              <button class="btn btn-accent" onclick="withdrawBank(1)">TOUT</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="section-title">
+            <span>Améliorations Bancaires</span>
+          </div>
+          <div id="bank-upgrades-container"></div>
+        </div>
+
+      </div>
     </div>
 
     <!-- Barre du bas -->
     <div class="bottom-bar">
-      <button class="btn btn-secondary" onclick="showScreen('menu')">← MENU</button>
-      <button class="btn btn-accent" onclick="confirmPrestige()">★ PRESTIGE</button>
+      <button class="btn btn-secondary btn-bottom-menu" onclick="showScreen('menu')">← MENU</button>
+      <div class="bottom-tabs">
+        <button class="btn btn-tab active" onclick="switchGameTab('production')" id="tab-production">🏠</button>
+        <button class="btn btn-tab" onclick="switchGameTab('upgrades')" id="tab-upgrades">👷</button>
+        <button class="btn btn-tab" onclick="switchGameTab('bank')" id="tab-bank">📊</button>
+      </div>
+      <button class="btn btn-accent btn-bottom-menu" onclick="confirmPrestige()">★ PRESTIGE</button>
     </div>
   </div>
 
