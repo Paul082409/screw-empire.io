@@ -85,7 +85,6 @@ function createInitialState() {
     upgrades: UPGRADES.map(() => false),
     achievements: ACHIEVEMENTS.map(() => false),
     currentPhase: 1,
-    autoSell: false,
     prestigeMultiplier: 1,
     prestigeCount: 0,
     settings: {
@@ -297,16 +296,6 @@ function checkPhase() {
     const phaseData = PHASES.find(p => p.level === newPhase);
     showNotification("Phase " + newPhase + " : " + phaseData.name + " débloquée !", "achievement");
 
-    if (newPhase >= 3) {
-      game.autoSell = true;
-      const toggle = document.getElementById("autosell-toggle");
-      if (toggle) {
-        toggle.disabled = false;
-        toggle.checked = true;
-      }
-      showNotification("Vente automatique activée !", "info");
-    }
-
     const newProducers = PRODUCERS.filter(p => p.phase === newPhase);
     if (newProducers.length > 0) {
       showNotification("Nouveaux systèmes de production disponibles !", "info");
@@ -352,16 +341,9 @@ function doPrestige() {
   game.producers = PRODUCERS.map(() => 0);
   game.upgrades = UPGRADES.map(() => false);
   game.currentPhase = 1;
-  game.autoSell = false;
   game._upgradeClick = 1;
   game._upgradeProd = 1;
   game._upgradeValue = 1;
-
-  const toggle = document.getElementById("autosell-toggle");
-  if (toggle) {
-    toggle.disabled = true;
-    toggle.checked = false;
-  }
 
   showNotification("★ Prestige réussi ! Multiplicateur x" + newMult.toFixed(2), "achievement");
   updateUI();
@@ -385,7 +367,6 @@ function saveGame() {
       upgrades: game.upgrades,
       achievements: game.achievements,
       currentPhase: game.currentPhase,
-      autoSell: game.autoSell,
       prestigeMultiplier: game.prestigeMultiplier,
       prestigeCount: game.prestigeCount,
       settings: game.settings,
@@ -410,7 +391,7 @@ function loadGame() {
 
     const fields = [
       "screws","money","totalScrews","totalScrewsAllTime","totalMoney","totalClicks",
-      "producers","upgrades","achievements","currentPhase","autoSell",
+      "producers","upgrades","achievements","currentPhase",
       "prestigeMultiplier","prestigeCount","settings",
       "_upgradeClick","_upgradeProd","_upgradeValue",
       "buyMultiplier"
@@ -431,12 +412,6 @@ function loadGame() {
     const animToggle = document.getElementById("anim-toggle");
     if (animToggle) animToggle.checked = game.settings.animations !== false;
     document.documentElement.setAttribute("data-animations", game.settings.animations !== false ? "on" : "off");
-
-    const asToggle = document.getElementById("autosell-toggle");
-    if (asToggle) {
-      asToggle.disabled = game.currentPhase < 3;
-      asToggle.checked = game.autoSell && game.currentPhase >= 3;
-    }
 
     recalcUpgrades();
 
@@ -474,7 +449,6 @@ function updateUI() {
   const profitPS = prodPS * value;
   if (profit) {
     profit.textContent = formatMoney(profitPS) + "/s";
-    profit.style.color = game.autoSell ? "" : (game.currentPhase >= 3 ? "" : "var(--text-muted)");
   }
 
   const prodRate = document.getElementById("production-rate");
@@ -716,12 +690,6 @@ function toggleAnimations() {
   saveGame();
 }
 
-function toggleAutoSell() {
-  const toggle = document.getElementById("autosell-toggle");
-  game.autoSell = toggle.checked;
-  saveGame();
-}
-
 function buyMultiplierSet(mult) {
   game.buyMultiplier = mult;
   document.querySelectorAll(".buy-multiplier .btn").forEach(b => b.classList.remove("active"));
@@ -778,14 +746,6 @@ function gameLoop() {
   game.screws += produced;
   game.totalScrews += produced;
   game.totalScrewsAllTime += produced;
-
-  if (game.autoSell && game.currentPhase >= 3) {
-    const value = getScrewValue();
-    const earned = game.screws * value;
-    game.money += earned;
-    game.totalMoney += earned;
-    game.screws = 0;
-  }
 
   checkPhase();
   checkAchievements();
